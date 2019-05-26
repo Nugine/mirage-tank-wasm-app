@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>幻影坦克</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css"
+        integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .row-center-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap
+        }
+
+        #image-container img {
+            width: 45%
+        }
+
+        #output {
+            max-width: 100%;
+        }
+    </style>
+</head>
+
+<body class="container-fluid">
+    <form>
+
+        <div class="row-center-container">
+            <div>
+                <div class="form-group">
+                    <label for="foreground">表图</label>
+                    <input type="file" name="foreground" id="foreground" accept="image/*">
+                </div>
+
+                <div class="form-group">
+                    <label for="foreground-light">亮度比例</label>
+                    <input type="number" name="foreground-light" id="foreground-light" value="1.0">
+                </div>
+
+                <div class="form-group">
+                    <label for="foreground-color">色彩比例</label>
+                    <input type="number" name="foreground-color" id="foreground-color" value="0.5">
+                </div>
+            </div>
+            <div>
+                <div class="form-group">
+                    <label for="background">里图</label>
+                    <input type="file" name="background" id="background" accept="image/*">
+                </div>
+
+                <div class="form-group">
+                    <label for="background-light">亮度比例</label>
+                    <input type="number" name="background-light" id="background-light" value="0.2">
+                </div>
+                <div class="form-group">
+                    <label for="background-color">色彩比例</label>
+                    <input type="number" name="background-color" id="background-color" value="0.7">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="width-input">宽度</label>
+            <input type="number" class="form-control" id="width-input" value="300">
+        </div>
+        <div class="form-group">
+            <label for="height-input">高度</label>
+            <input type="number" class="form-control" id="height-input" value="300">
+        </div>
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" id="is-checkerboarded" checked>
+                棋盘格渲染
+            </label>
+        </div>
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" id="is-colorful" checked>
+                彩色输出
+            </label>
+        </div>
+        <div class="form-group">
+            <center>
+                <button id="renderBtn" class="btn btn-default" type="button">渲染</button>
+                <button id="lightBtn" class="btn btn-default" type="button">关灯</button>
+            </center>
+        </div>
+    </form>
+
+    <div>
+        <div id="image-container" class="row-center-container">
+            <img id="foreground-image">
+            <img id="background-image">
+        </div>
+        <div>
+            <center>
+                <a id="download" target="_blank" download="tank.png"><img id="output" /></a>
+            </center>
+        </div>
+
+    </div>
+    <script src="./bootstrap.js"></script>
+</body>
+
+</html>
