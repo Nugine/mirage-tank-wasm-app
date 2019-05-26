@@ -6,19 +6,35 @@ main()
 
 function main() {
     const foregroundInput = document.getElementById('foreground') as HTMLInputElement
-    const foregroundImg = document.getElementById('foreground-image') as HTMLImageElement
+    const foregroundLightInput = document.getElementById('foreground-light') as HTMLInputElement
+    const foregroundColorInput = document.getElementById('foreground-color') as HTMLInputElement
+
     const backgroundInput = document.getElementById('background') as HTMLInputElement
-    const backgroundImg = document.getElementById('background-image') as HTMLImageElement
-    const outputImg = document.getElementById('output') as HTMLImageElement
-    const renderBtn = document.getElementById('renderBtn') as HTMLButtonElement
-    const downloadAnchor = document.getElementById('download') as HTMLAnchorElement
+    const backgroundLightInput = document.getElementById('background-light') as HTMLInputElement
+    const backgroundColorInput = document.getElementById('background-color') as HTMLInputElement
+
     const widthInput = document.getElementById('width-input') as HTMLInputElement
     const heightInput = document.getElementById('height-input') as HTMLInputElement
+
     const checkerboardCheckbox = document.getElementById('is-checkerboarded') as HTMLInputElement
     const colorfulCheckbox = document.getElementById('is-colorful') as HTMLInputElement
 
-    const cache: { wbuf: Uint8Array | undefined, bbuf: Uint8Array | undefined } = {} as any
-    let mt: MirageTank | undefined
+    const renderBtn = document.getElementById('renderBtn') as HTMLButtonElement
+    const lightBtn = document.getElementById('lightBtn') as HTMLButtonElement
+
+    const foregroundImg = document.getElementById('foreground-image') as HTMLImageElement
+    const backgroundImg = document.getElementById('background-image') as HTMLImageElement
+
+    const outputImg = document.getElementById('output') as HTMLImageElement
+    const downloadAnchor = document.getElementById('download') as HTMLAnchorElement
+
+
+    const state: {
+        wbuf: Uint8Array | undefined,
+        bbuf: Uint8Array | undefined,
+        light: boolean,
+        mt: MirageTank | undefined
+    } = { light: true, wbuf: undefined, bbuf: undefined, mt: undefined }
 
     const tie = (input: HTMLInputElement, img: HTMLImageElement, target: 'wbuf' | 'bbuf') => {
         input.onchange = async () => {
@@ -28,46 +44,42 @@ function main() {
             const file = input.files[0]
             img.src = URL.createObjectURL(file)
             const buf = new Uint8Array(await readFile(file))
-            cache[target] = buf
+            state[target] = buf
 
-            if (mt) { mt.free(); mt = undefined }
-            if (!cache.wbuf || !cache.bbuf) { return }
-            mt = new MirageTank(cache.wbuf, cache.bbuf)
-            widthInput.value = Math.min(mt.wimage_width, mt.bimage_width).toString()
-            heightInput.value = Math.min(mt.wimage_height, mt.bimage_height).toString()
+            if (state.mt) { state.mt.free(); state.mt = undefined }
+            if (!state.wbuf || !state.bbuf) { return }
+            state.mt = new MirageTank(state.wbuf, state.bbuf)
+            widthInput.value = Math.min(state.mt.wimage_width, state.mt.bimage_width).toString()
+            heightInput.value = Math.min(state.mt.wimage_height, state.mt.bimage_height).toString()
         }
     }
 
     const render = async () => {
-        if (!mt) { return }
+        if (!state.mt) { return }
 
         const width = parseInt(widthInput.value, 10)
         const height = parseInt(heightInput.value, 10)
         const checkerboarded = checkerboardCheckbox.checked
         const isColorful = colorfulCheckbox.checked
-        const wlight = 1.0
-        const blight = 0.2
-        const wcolor = 0.5
-        const bcolor = 0.7
+        const wlight = parseFloat(foregroundLightInput.value)
+        const blight = parseFloat(backgroundLightInput.value)
+        const wcolor = parseFloat(foregroundColorInput.value)
+        const bcolor = parseFloat(backgroundColorInput.value)
 
         let imageBuf
         if (isColorful) {
-            imageBuf = mt.colorful_output(width, height, checkerboarded, wlight, blight, wcolor, bcolor)
+            imageBuf = state.mt.colorful_output(width, height, checkerboarded, wlight, blight, wcolor, bcolor)
         } else {
-            imageBuf = mt.grey_output(width, height, checkerboarded, wlight, blight)
+            imageBuf = state.mt.grey_output(width, height, checkerboarded, wlight, blight)
         }
 
         const data = imageEncode(imageBuf, 'png', { width, height })
         const urlBlob = URL.createObjectURL(new Blob([data]))
 
         outputImg.src = urlBlob
-        outputImg.width = width
-        outputImg.height = height
         downloadAnchor.href = urlBlob
     }
 
-    widthInput.value = '300'
-    heightInput.value = '300'
     tie(foregroundInput, foregroundImg, 'wbuf')
     tie(backgroundInput, backgroundImg, 'bbuf')
 
@@ -75,6 +87,27 @@ function main() {
         console.log('rendering')
         await render()
         console.log('rendered')
+    }
+
+    lightBtn.onclick = () => {
+        state.light = !state.light
+        if (state.light) {
+            document.body.style.backgroundColor = null
+            lightBtn.textContent = "关灯"
+        } else {
+            document.body.style.backgroundColor = "black"
+            lightBtn.textContent = "开灯"
+        }
+    }
+
+    colorfulCheckbox.onchange = () => {
+        if (colorfulCheckbox.checked) {
+            (foregroundColorInput.parentElement as HTMLDivElement).style.display = null;
+            (backgroundColorInput.parentElement as HTMLDivElement).style.display = null;
+        } else {
+            (foregroundColorInput.parentElement as HTMLDivElement).style.display = "none";
+            (backgroundColorInput.parentElement as HTMLDivElement).style.display = "none";
+        }
     }
 
     console.log('loaded')
