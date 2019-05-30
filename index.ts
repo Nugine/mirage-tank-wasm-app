@@ -54,11 +54,15 @@ function main() {
         }
     }
 
+    const assertSize = (n: number) => { if (isNaN(n) || n <= 0 || n >= 10000) { throw "invalid size" } }
+
     const render = async () => {
-        if (!state.mt) { return }
+        if (!state.wbuf || !state.bbuf) { throw "no input file" }
+        if (!state.mt) { state.mt = new MirageTank(state.wbuf, state.bbuf) }
 
         const width = parseInt(widthInput.value, 10)
         const height = parseInt(heightInput.value, 10)
+        assertSize(width), assertSize(height)
         const checkerboarded = checkerboardCheckbox.checked
         const isColorful = colorfulCheckbox.checked
         const wlight = parseFloat(foregroundLightInput.value)
@@ -85,8 +89,14 @@ function main() {
 
     renderBtn.onclick = async () => {
         console.log('rendering')
-        await render()
-        console.log('rendered')
+        try {
+            await render()
+            console.log('rendered')
+        } catch (err) {
+            console.log('aborted')
+            console.error(err)
+            alert(err);
+        }
     }
 
     lightBtn.onclick = () => {
